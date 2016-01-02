@@ -51,7 +51,7 @@ source_definitions = [
      
 #### END - MUST CHANGE
 
-sidebar_doc = """Российская Федерация 2
+sidebar_doc = """Российская Федерация 1
 Центральный федеральный округ
 Белгородская область
 Брянская область
@@ -62,7 +62,7 @@ sidebar_doc = """Российская Федерация 2
 Костромская область
 Курская область
 Липецкая область
-Московская область  3
+Московская область  2
 Орловская область
 Рязанская область
 Смоленская область
@@ -70,13 +70,13 @@ sidebar_doc = """Российская Федерация 2
 Тверская область
 Тульская область
 Ярославская область
-г.Москва  3
+г.Москва  2
 Северо-Западный федеральный округ
 Республика Карелия
 Республика Коми
 Архангельская область
 в том числе               Ненецкий авт.округ
-Архангельская область без авт. округа 4
+Архангельская область без авт. округа 3
 Вологодская область
 Калининградская область
 Ленинградская область
@@ -84,7 +84,7 @@ sidebar_doc = """Российская Федерация 2
 Новгородская область
 Псковская область
 г.Санкт-Петербург
-Южный                   федеральный округ 5
+Южный                   федеральный округ 4
 Республика Адыгея
 Республика Калмыкия
 Краснодарский край
@@ -120,7 +120,7 @@ sidebar_doc = """Российская Федерация 2
 Тюменская область
 в том числе:                     Ханты-Мансийский       авт. округ - Югра
 Ямало-Ненецкий             авт. округ
-Тюменская область без авт. округов 4
+Тюменская область без авт. округов 3
 Челябинская область
 Сибирский           федеральный округ
 Республика Алтай
@@ -299,8 +299,6 @@ assert testable_district_names[6] in siberia_district['Unnamed'][0]
 assert testable_district_names[7] in far_eastern_district['Unnamed'][0]
 assert testable_district_names[8] in crimea_district['Unnamed'][0]
 
-# Test if DataFrame
-assert isinstance(datafile, pd.DataFrame)
 
 # Test regions names
 for test_dist, dist in zip(testable_district_names, districts):
@@ -313,3 +311,27 @@ for test_nm, nm in zip(testable_region_names, datafile['Unnamed'].values):
 # Test years
 for test_ye, ye in zip(years, doc_years):
     assert str(test_ye) in ye
+
+
+df = '230-232 ' + source_definitions[2]['filename']
+dfile = pd.read_excel(df, skiprows=0, skip_footer=0)
+
+# print(dfile.values[1])
+
+
+def df_read_check():
+    # Test if all regions names are in the opened file
+    for test_nm, nm in zip(dfile.values[3:], actual_sidebar_list):
+        assert nm in test_nm[0]
+
+    # test_years = [ii for ii in dfile.values[1] for jj in ii if jj.isdigit()]
+    # for test_y in dfile.values[1]:
+    #     # print(test_y)
+    #     name = [(str(ii) + ' год') for ii in years]
+    #
+    #     if str(test_y) not in name and str(test_y) is not 'nan':
+    #         print(test_y)
+    #     # Test if all regions names are in the opened file
+    #     # assert nm in test_nm[0]
+
+df_read_check()
