@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import os
 import pandas as pd
+
+
+def find_file(pattern, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if pattern in name:
+                result.append(os.path.join(root, name))
+    return result
 
 
 def read_data(data):
@@ -39,3 +49,51 @@ def read_data(data):
 
     return doc_name, doc_comment, doc_years, datafile
 
+
+# # read data
+# doc_name, doc_comment, doc_years, datafile = read_data('230-232 ' + source_definitions[2]['filename'])
+#
+# # todo:
+# # - summable regions
+#
+# # - regions by district
+# districts = []
+# districts_rows = []
+# for row, nm in enumerate(datafile['Unnamed']):
+#     if 'федеральный округ' in nm:
+#         districts.append(nm)
+#         districts_rows.append(row)
+#
+# center_district = datafile.iloc[districts_rows[0]:districts_rows[1]].reset_index(drop=True)
+# north_west_district = datafile.iloc[districts_rows[1]:districts_rows[2]].reset_index(drop=True)
+# south_district = datafile.iloc[districts_rows[2]:districts_rows[3]].reset_index(drop=True)
+# north_caucasus_district = datafile.iloc[districts_rows[3]:districts_rows[4]].reset_index(drop=True)
+# volga_district = datafile.iloc[districts_rows[4]:districts_rows[5]].reset_index(drop=True)
+# ural_district = datafile.iloc[districts_rows[5]:districts_rows[6]].reset_index(drop=True)
+# siberia_district = datafile.iloc[districts_rows[6]:districts_rows[7]].reset_index(drop=True)
+# far_eastern_district = datafile.iloc[districts_rows[7]:districts_rows[8]].reset_index(drop=True)
+# crimea_district = datafile.iloc[districts_rows[8]:].reset_index(drop=True)
+#
+# # Test districts names
+# assert testable_district_names[0] in center_district['Unnamed'][0]
+# assert testable_district_names[1] in north_west_district['Unnamed'][0]
+# assert testable_district_names[2] in south_district['Unnamed'][0]
+# assert testable_district_names[3] in north_caucasus_district['Unnamed'][0]
+# assert testable_district_names[4] in volga_district['Unnamed'][0]
+# assert testable_district_names[5] in ural_district['Unnamed'][0]
+# assert testable_district_names[6] in siberia_district['Unnamed'][0]
+# assert testable_district_names[7] in far_eastern_district['Unnamed'][0]
+# assert testable_district_names[8] in crimea_district['Unnamed'][0]
+#
+#
+# # Test regions names
+# for test_dist, dist in zip(testable_district_names, districts):
+#     assert test_dist in dist
+#
+# # Test if all regions are in datafile
+# for test_nm, nm in zip(testable_region_names, datafile['Unnamed'].values):
+#     assert test_nm in nm
+#
+# # Test years
+# for test_ye, ye in zip(years, doc_years):
+#     assert str(test_ye) in ye

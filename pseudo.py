@@ -6,9 +6,9 @@
 индексы цен (тарифов) на грузовые перевозки.xls
 цены на первичном и вторичном рынках жилья.xls"""
 
-# import openpyxl
-import pandas as pd
-from modules import read_data
+from pandas import read_excel, DataFrame
+from modules import find_file, read_data
+import os
 
 # must use 'sheet' if more than 1 sheet in Excel workbook
 
@@ -22,31 +22,40 @@ source_definitions = [
      
     {'varname': 'PPI_CONSTR_ytd',
      'folder': '11 цены производителей',
-     'filename': 'индексы цен производителей промышленных товаров.xlsm',
+     'filename': 'индексы цен производителей cтроительной продукции.xlsx',
      'sheet': 'строит.продукция',
      'anchor': 'B5',
      'anchor_value': 99.4},
+
+    {'varname': 'PPI_TRANSP_ytd',
+     'folder': '11 цены производителей',
+     'filename': 'индексы цен (тарифов) на грузовые перевозки.xls',
+     'sheet': 'грузовые перевозки',
+     'anchor': 'B5',
+     'anchor_value': 102.8},
 
 #### MUST CHANGE
      
     {'varname': 'PPI_AGRO_ytd',
      'folder': '11 цены производителей',
      'filename': 'индексы цен производителей на реализованную сельскохозяйственн продукцию.xls',
-     'sheet': 'пром.товаров',
+     'sheet': 'сельск.продукция',
      'anchor': 'B5',
-     'anchor_value': 99.4},
+     'anchor_value': 99.5},
      
-    {'varname': 'PPI_rog',
+    {'varname': 'PPI_rog_prim',
      'folder': '11 цены производителей',
      'filename': 'цены на первичном и вторичном рынках жилья.xls',
-     'sheet': 'пром.товаров',
-     'anchor': 'B5'},
+     'sheet': 'первичный рынок',
+     'anchor': 'B5',
+     'anchor_value': 50465},
 
-    {'varname': 'PPI_rog',
+    {'varname': 'PPI_rog_sec',
      'folder': '11 цены производителей',
      'filename': 'цены на первичном и вторичном рынках жилья.xls',
-     'sheet': 'пром.товаров',
-     'anchor': 'B5'}
+     'sheet': 'вторичный рынок',
+     'anchor': 'B5',
+     'anchor_value': 57806}
      ]
      
 #### END - MUST CHANGE
@@ -250,6 +259,8 @@ testable_sidebar_doc = """Российская Федерация
 г. Севастополь"""
 
 years = [2009, 2010, 2011, 2012, 2013, 2014, 2015]
+months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+          'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь']
 
 actual_sidebar_list = sidebar_doc.split("\n")
 testable_region_names = testable_sidebar_doc.split("\n")
@@ -264,74 +275,38 @@ assert len(testable_district_names) == 9
 
 RF = "Российская Федерация"
 
-# read data
-doc_name, doc_comment, doc_years, datafile = read_data('230-232 ' + source_definitions[2]['filename'])
 
-# todo: 
-# - summable regions
+var = 4
+fname = find_file(source_definitions[var]['filename'], os.getcwd())
 
-# - regions by district
-districts = []
-districts_rows = []
-for row, nm in enumerate(datafile['Unnamed']):
-    if 'федеральный округ' in nm:
-        districts.append(nm)
-        districts_rows.append(row)
-
-center_district = datafile.iloc[districts_rows[0]:districts_rows[1]].reset_index(drop=True)
-north_west_district = datafile.iloc[districts_rows[1]:districts_rows[2]].reset_index(drop=True)
-south_district = datafile.iloc[districts_rows[2]:districts_rows[3]].reset_index(drop=True)
-north_caucasus_district = datafile.iloc[districts_rows[3]:districts_rows[4]].reset_index(drop=True)
-volga_district = datafile.iloc[districts_rows[4]:districts_rows[5]].reset_index(drop=True)
-ural_district = datafile.iloc[districts_rows[5]:districts_rows[6]].reset_index(drop=True)
-siberia_district = datafile.iloc[districts_rows[6]:districts_rows[7]].reset_index(drop=True)
-far_eastern_district = datafile.iloc[districts_rows[7]:districts_rows[8]].reset_index(drop=True)
-crimea_district = datafile.iloc[districts_rows[8]:].reset_index(drop=True)
-
-# Test districts names
-assert testable_district_names[0] in center_district['Unnamed'][0]
-assert testable_district_names[1] in north_west_district['Unnamed'][0]
-assert testable_district_names[2] in south_district['Unnamed'][0]
-assert testable_district_names[3] in north_caucasus_district['Unnamed'][0]
-assert testable_district_names[4] in volga_district['Unnamed'][0]
-assert testable_district_names[5] in ural_district['Unnamed'][0]
-assert testable_district_names[6] in siberia_district['Unnamed'][0]
-assert testable_district_names[7] in far_eastern_district['Unnamed'][0]
-assert testable_district_names[8] in crimea_district['Unnamed'][0]
+dfile = read_excel(fname[0], sheetname=source_definitions[var]['sheet'], skiprows=0, skip_footer=0)
 
 
-# Test regions names
-for test_dist, dist in zip(testable_district_names, districts):
-    assert test_dist in dist
+def datafile_read_test():
+    # Test if DataFrame
+    assert isinstance(dfile, DataFrame)
 
-# Test if all regions are in datafile
-for test_nm, nm in zip(testable_region_names, datafile['Unnamed'].values):
-    assert test_nm in nm
+    # Test first value in file ('anchor_value')
+    assert dfile.values[3][1] == source_definitions[var]['anchor_value']
 
-# Test years
-for test_ye, ye in zip(years, doc_years):
-    assert str(test_ye) in ye
-
-
-df = '230-232 ' + source_definitions[2]['filename']
-dfile = pd.read_excel(df, skiprows=0, skip_footer=0)
-
-# print(dfile.values[1])
-
-
-def df_read_check():
     # Test if all regions names are in the opened file
-    for test_nm, nm in zip(dfile.values[3:], actual_sidebar_list):
-        assert nm in test_nm[0]
+    for test_nm, nm in zip(dfile.values[3:], testable_region_names):
+        # if nm not in test_nm[0]:
+        #     print(nm, '=', test_nm[0])
+        assert "".join(nm.split()) in "".join(test_nm[0].split())
 
-    # test_years = [ii for ii in dfile.values[1] for jj in ii if jj.isdigit()]
-    # for test_y in dfile.values[1]:
-    #     # print(test_y)
-    #     name = [(str(ii) + ' год') for ii in years]
-    #
-    #     if str(test_y) not in name and str(test_y) is not 'nan':
-    #         print(test_y)
-    #     # Test if all regions names are in the opened file
-    #     # assert nm in test_nm[0]
+    # Test if all years are in file read
+    test_years = ["".join(ii.split()) for ii in dfile.values[1] if str(ii) != 'nan']
+    years_ = [(str(ii) + 'год') for ii in years]
+    assert test_years == years_
 
-df_read_check()
+    # Test if month or quarter names are read properly
+    if 'январь' in dfile.values[2]:
+        for m in dfile.values[2][1:]:   # month
+            assert "".join(m.split()) in months
+    else:
+        for q in dfile.values[2][1:]:   # quarter
+            assert 'квартал' in q
+
+if __name__ == "__main__":
+    datafile_read_test()
